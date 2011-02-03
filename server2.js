@@ -39,9 +39,20 @@ Server.prototype.parseSettings = function(data){
 Server.prototype.createServer = function(){
 	this.http = http.createServer(this.onRequest.bind(this)).listen(this.options.port);
 	this.tickets = {q: [], all: {}};
-	this.totalTraffic = 0;
+	this.totalTraffic=0;
+	this.trafficMonitor = setInterval((this.statsTick).bind(this),1000);
+}
 
-	this.trafficMonitor = setInterval(this.statsTick.bind(this),1000);
+Server.prototype.cleanTickets = function(){
+	var now = Date.now()
+	for (var i in this.tickets.all){
+		if( (now - this.tickets.all[i].created).milliseconds > 24*3600*1000){
+			this.tickets.q[this.tickets.q.indexOf(this.tickets.all[i])]==null;
+			delete this.tickets.all[i];
+		}
+	}
+	//we need to improve on the ticket system
+	//this function potentially lies in O(n²)
 }
 
 Server.prototype.findFiles = function(){
@@ -132,6 +143,7 @@ Server.prototype.createTicket = function(req,res,matches){
 }
 
 Server.prototype.download = function(req,res,matches){
+	
 	var ticket=this.tickets.all[matches[1]];
 	if(ticket){
 		if(ticket.res){
@@ -164,31 +176,43 @@ Server.prototype.download = function(req,res,matches){
 				res.end('requested range not satisfiable');
 			}
 		}
+		req.socket.on('close',function(){(this.onSocketClose(ticket)}).bind(this))
 	}
 	else{
 		res.writeHead(404);
 		res.end('file not found');
 	}
+
 }
 
 Server.prototype.sendfile = function(ticket){
 	if(ticket.filename in this.files){
 		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.start, end: ticket.end});
 		ticket.rs.pipe(ticket.res);
+		ticket.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
 	}
 	else{ //file has been deleted in the mean time
 		ticket.res.end();
 	}
 }
 
+Server.prototype.onSocketClose = function(ticket){
+	ticket.res.close();
+	delete this.tickets.all[ticket.id]
+}
+
 Server.prototype.statsTick = function(){
-	if (this.tickets.q.length > 0 && this.totalTraffic < (this.options.maintainTraffic || Number.POSITIVE_INFINITY) ){
-		var t = this.tickets.q.shift();
-		t.ready = true;
-		if( t.res ){
-			this.sendfile(t);
+	if (this.tickets.q.length > 0 && this.totalTraffic < (this.options.maintainTraffic || Number.POSITIVE_INFINITY)){
+		var t;
+ 		while(this.tickets.q.length>0 && (null == (t = this.tickets.q.shift()))){} //some entries in tickets may be null due to premature deletion
+		if( t ){ // the last item might be null as well
+			t.ready = true;
+			if( t.res ){
+				this.sendfile(t);
+			}
 		}
 	}
+	//console.log(this.totalTraffic);
 	this.totalTraffic = 0;
 }
 
