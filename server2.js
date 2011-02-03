@@ -2,6 +2,8 @@ var http = require('http');
 var fs   = require('fs');
 var url  = require('url');
 
+var thankyou = require('./templates/thankyou.html.js');
+
 var settingsPath='settings2.json';
 
 var Ticket = function(Server, filename){
@@ -41,8 +43,9 @@ Server.prototype.createServer = function(){
 
 Server.prototype.findFiles = function(){
 	fs.readdir(this.options.downloadPath,(function(err,files){
-		console.log('files found:');
 		if(err) throw err;
+		
+		console.log('files found:');
 		this.files={};
 		for(var i in files){
 			this.addFile(this,files[i]);
@@ -68,6 +71,8 @@ Server.prototype.onRequest = function(req,res){
 		this.createTicket(req,res,matches);
 	else if(matches=u.pathname.match(/^\/download\/([0-9]+)\/?/i))
 		this.download(req,res,matches);
+	else if(u.pathname.match(/^\/thankyou\/?/i))
+		this.showTemplate(res,req,thankyou.text);
 	else{
 		res.writeHead(200,{});
 		res.write(req.url+"\n");
@@ -82,6 +87,11 @@ Server.prototype.showIndex = function(req,res){
 		res.write('\t<li><a href="/createTicketFor/' + i + '">'+i+'</a></li>\n');
 	}
 	res.end('</ul></html>');
+}
+
+Server.prototype.showTemplate = function(res,req,textfnc){
+	res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+	res.end(textfnc());
 }
 
 Server.prototype.createTicket = function(req,res,matches){
