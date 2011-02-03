@@ -15,3 +15,8 @@ Prerequisites:
 Usage:
  	- change settings in settings.json
 	- start server by running 'node server2.js'
+
+Installing node.js:
+	- ./configure
+	- make
+	- sudo make install
