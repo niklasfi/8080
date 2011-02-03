@@ -41,6 +41,7 @@ Server.prototype.createServer = function(){
 	this.tickets = {q: [], all: {}};
 	this.totalTraffic=0;
 	this.trafficMonitor = setInterval((this.statsTick).bind(this),1000);
+	this.ticketCleaner = setInterval((this.cleanTickets).bing(this),24*3600*1000);
 }
 
 Server.prototype.cleanTickets = function(){
