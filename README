@@ -12,11 +12,12 @@ Y8a     a8P   `8ba,  ,ad8'   Y8a     a8P   `8ba,  ,ad8'
 Prerequisites:
 	- node.js 0.3.7 (nodejs.org) 
 
-Usage:
- 	- change settings in settings.json
-	- start server by running 'node server2.js'
-
 Installing node.js:
 	- ./configure
 	- make
 	- sudo make install
+
+Usage:
+ 	- change settings in settings.json
+	- start server by running 'node server2.js'
+
