@@ -30,8 +30,9 @@ Server.prototype.parseSettings = function(data){
 	if(!this.options.downloadPath) throw new Error('downloadPath is not set in settings file');
 	if(this.options.downloadPath.substring(this.options.downloadPath.length-1,1)!='/') this.options.downloadPath+'/';
 	this.createServer();
+	this.files={};
 	this.findFiles();
-	setInterval(30000,this.findFiles.bind(this));
+	setInterval((this.findFiles).bind(this),3000);
 
 }
 
@@ -39,16 +40,17 @@ Server.prototype.createServer = function(){
 	this.http = http.createServer(this.onRequest.bind(this)).listen(this.options.port);
 	this.tickets = {q: [], all: {}};
 	this.totalTraffic = 0;
+
 	this.trafficMonitor = setInterval(this.statsTick.bind(this),1000);
 }
 
 Server.prototype.findFiles = function(){
 	fs.readdir(this.options.downloadPath,(function(err,files){
 		if(err) throw err;
-		this.files={};
-		for(var i in files){
-			if(! (i in this.files))
-				this.addFile(files[i]);
+
+		for(var f in files){
+			if(! this.files[files[f]])
+				this.addFile(files[f]);
 		}
 	}).bind(this))
 }
