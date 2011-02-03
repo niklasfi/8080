@@ -97,7 +97,7 @@ Server.prototype.onRequest = function(req,res){
 
 Server.prototype.showIndex = function(req,res){
 	res.writeHead(200,{'Content-Type': 'text/html; charset=utf-8'});
-	res.write('<http><body><h1>OTR-Mirror</h1><ul>\n')
+	res.write('<http><head><link rel="stylesheet" type="text/css" href="style.css"></head><body><h1>OTR-Mirror</h1><ul>\n')
 	for(var i in this.files){
 		res.write('\t<li><a href="/createTicketFor/' + i + '">'+i+'</a></li>\n');
 	}

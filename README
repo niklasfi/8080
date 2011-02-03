@@ -1,3 +1,17 @@
-8080 is an open source otr mirror.
+ ad88888ba      ,a8888a,      ad88888ba      ,a8888a,     
+d8"     "8b   ,8P"'  `"Y8,   d8"     "8b   ,8P"'  `"Y8,   
+Y8a     a8P  ,8P        Y8,  Y8a     a8P  ,8P        Y8,  
+ "Y8aaa8P"   88          88   "Y8aaa8P"   88          88  
+ ,d8"""8b,   88          88   ,d8"""8b,   88          88  
+d8"     "8b  `8b        d8'  d8"     "8b  `8b        d8'  
+Y8a     a8P   `8ba,  ,ad8'   Y8a     a8P   `8ba,  ,ad8'   
+ "Y88888P"      "Y8888P"      "Y88888P"      "Y8888P"     
+                                                          
+		open otr-mirror system
 
-to run it install node.js from http://nodejs.org (I'm currently working with v0.3.7 (the apis tend to change quite quickly)) and apply the desired options in your settings2.json. Finally type `node server2.js`
+Prerequisites:
+	- node.js 0.3.7 (nodejs.org) 
+
+Usage:
+ 	- change settings in settings.json
+	- start server by running 'node server2.js'
