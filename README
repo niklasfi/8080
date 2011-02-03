@@ -13,9 +13,8 @@ Prerequisites:
 	- node.js 0.3.7 (nodejs.org) 
 
 Installing node.js:
-	- ./configure
-	- make
-	- sudo make install
+	- download
+	- ./configure; make; sudo make install
 
 Usage:
  	- change settings in settings.json
