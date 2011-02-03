@@ -31,6 +31,7 @@ Server.prototype.parseSettings = function(data){
 	if(this.options.downloadPath.substring(this.options.downloadPath.length-1,1)!='/') this.options.downloadPath+'/';
 	this.createServer();
 	this.findFiles();
+	setInterval(30000,this.findFiles.bind(this));
 
 }
 
@@ -44,22 +45,36 @@ Server.prototype.createServer = function(){
 Server.prototype.findFiles = function(){
 	fs.readdir(this.options.downloadPath,(function(err,files){
 		if(err) throw err;
-		
-		console.log('files found:');
 		this.files={};
 		for(var i in files){
-			this.addFile(this,files[i]);
+			if(! (i in this.files))
+				this.addFile(files[i]);
 		}
 	}).bind(this))
 }
-Server.prototype.addFile = function(that,filename){
+Server.prototype.addFile = function(filename){
 	this.files[filename]={filename: filename, status: 'pre-stat'};
 	fs.stat(this.options.downloadPath+filename, (function(err, stats){
-		console.log('\t'+filename);
+		console.log('+ '+filename);
 		if(err) throw err;
 		this.files[filename].size=stats.size;
 		this.files[filename].status='ready';
+		fs.watchFile(this.options.downloadPath+filename, (function(curr,prev){this.onFileChange(filename,curr,prev);}).bind(this));
 	}).bind(this));
+}
+
+Server.prototype.onFileChange = function(filename,curr,prev){
+	if(curr.nlink){
+
+		if(filename in this.files)
+			this.files[filename].size = curr.size;
+		else
+			this.addFile(filename)
+	}
+	else{
+		console.log('- '+filename);
+		delete this.files[filename];
+	}
 }
 
 Server.prototype.onRequest = function(req,res){
@@ -127,7 +142,11 @@ Server.prototype.download = function(req,res,matches){
 				ticket.start=parseInt(ranges[1]) || 0;
 				ticket.end=parseInt(ranges[2]) || this.files[ticket.filename].size-1;
 			}
-			if(!ticket.end || ticket.start<=ticket.end){
+			if(! (ticket.filename in this.files)){ //datei wurde in der Zwischenzeit gelöscht
+				res.writeHead(404)
+				res.end('file not found');
+			}			
+			else if(!ticket.end || ticket.start<=ticket.end){
 				var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
 				if(ticket.end){
 					options['Content-Range'] = 'bytes ' + ticket.start + '-' + ticket.end + '/' + this.files[ticket.filename].size;
@@ -151,8 +170,13 @@ Server.prototype.download = function(req,res,matches){
 }
 
 Server.prototype.sendfile = function(ticket){
-	ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.start, end: ticket.end});
-	ticket.rs.pipe(ticket.res);
+	if(ticket.filename in this.files){
+		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.start, end: ticket.end});
+		ticket.rs.pipe(ticket.res);
+	}
+	else{ //file has been deleted in the mean time
+		ticket.res.end();
+	}
 }
 
 Server.prototype.statsTick = function(){
