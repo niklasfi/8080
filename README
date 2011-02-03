@@ -1,0 +1,3 @@
+8080 is an open source otr mirror.
+
+to run it install node.js from http://nodejs.org (I'm currently working withv0.3.7 (the apis tend to change quite quickly)) and type `node server2.js`
