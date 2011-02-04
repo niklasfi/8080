@@ -41,7 +41,7 @@ Server.prototype.createServer = function(){
 	this.tickets = {q: [], all: {}};
 	this.totalTraffic=0;
 	this.trafficMonitor = setInterval((this.statsTick).bind(this),1000);
-	this.ticketCleaner = setInterval((this.cleanTickets).bing(this),24*3600*1000);
+	this.ticketCleaner = setInterval((this.cleanTickets).bind(this),24*3600*1000);
 }
 
 Server.prototype.cleanTickets = function(){
@@ -177,7 +177,7 @@ Server.prototype.download = function(req,res,matches){
 				res.end('requested range not satisfiable');
 			}
 		}
-		req.socket.on('close',function(){(this.onSocketClose(ticket)}).bind(this))
+		req.socket.on('close',(function(){this.onSocketClose(ticket)}).bind(this))
 	}
 	else{
 		res.writeHead(404);
