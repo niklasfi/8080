@@ -3,6 +3,7 @@ var fs   = require('fs');
 var url  = require('url');
 
 var thankyou = require('./templates/thankyou.html.js');
+var style = require('./templates/style.css.js');
 
 var settingsPath='settings2.json';
 
@@ -102,6 +103,8 @@ Server.prototype.onRequest = function(req,res){
 		this.download(req,res,matches);
 	else if(u.pathname.match(/^\/thankyou\/?/i))
 		this.showTemplate(res,req,thankyou.text);
+	else if(u.pathname.match(/^\/style.css\/?/i))
+		this.showTemplate(res,req,style.text);
 	else{
 		res.writeHead(200,{});
 		res.write(req.url+"\n");

@@ -1,5 +1,5 @@
 {
-  "downloadPath": "/var/lib/transmission-daemon/downloads/",
+  "downloadPath": "/tmp/samsung/otrkeys/finished/",
   "port": 8080,
   "maintainTraffic": 500000
 }
