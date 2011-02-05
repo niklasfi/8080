@@ -201,7 +201,7 @@ Server.prototype.sendfile = function(ticket){
 }
 
 Server.prototype.onSocketClose = function(ticket){
-	ticket.res.close();
+	//ticket.rs.close();
 	delete this.tickets.all[ticket.id]
 }
 
