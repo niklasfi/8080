@@ -68,8 +68,9 @@ Server.prototype.findFiles = function(){
 	}).bind(this))
 }
 Server.prototype.addFile = function(filename){
-	this.files[filename]={filename: filename, status: 'pre-stat'};
 	fs.stat(this.options.downloadPath+filename, (function(err, stats){
+		if(!stats.isFile()) return;
+		this.files[filename]={filename: filename, status: 'pre-stat'};
 		console.log('+ '+filename);
 		if(err) throw err;
 		this.files[filename].size=stats.size;
@@ -104,7 +105,7 @@ Server.prototype.onRequest = function(req,res){
 	else if(u.pathname.match(/^\/thankyou\/?/i))
 		this.showTemplate(res,req,thankyou.text);
 	else if(u.pathname.match(/^\/style.css\/?/i))
-		this.showTemplate(res,req,style.text);
+		this.showTemplate(res,req,style.text, 'text/css; charset=utf-8');
 	else{
 		res.writeHead(200,{});
 		res.write(req.url+"\n");
@@ -121,8 +122,8 @@ Server.prototype.showIndex = function(req,res){
 	res.end('</ul></html>');
 }
 
-Server.prototype.showTemplate = function(res,req,textfnc){
-	res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+Server.prototype.showTemplate = function(res,req,textfnc,mimeType){
+	res.writeHead(200, {'Content-Type': mimeType || 'text/html; charset=utf-8'});
 	res.end(textfnc());
 }
 
