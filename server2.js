@@ -4,12 +4,52 @@ var url  = require('url');
 
 var settingsPath='settings2.json';
 
-var Ticket = function(Server, filename){
-	while(this.id==null || Server.tickets.all[this.ID]!=null) 
+var Ticket = function(TicketQ, filename){
+	while(this.id==null || TicketQ.tickets[this.ID]!=null) 
 		this.id=Math.floor(Math.random() * (100000000 + 1));
 	this.created = Date.now();
+	this.skip = false;
 	this.filename = filename;
+	this.range = {};
 	this.ready = false;
+	this.next = null;
+}
+
+
+var TicketQ = function(){
+	this.head=null;
+	this.tail=null;
+	this.tickets = {};
+	setInterval((this.clean).bind(this),24*3600*1000)
+}
+
+TicketQ.prototype.append = function(filename){
+	var newTicket = new Ticket(this, filename);
+	this.tickets[newTicket.id] = newTicket;
+	if(this.head === null) this.head=newTicket; //Q empty, set head;
+	else this.tail.next = newTicket; //Q not empty, last object needs to be linked
+	return this.tail = newTicket;
+}
+
+TicketQ.prototype.shift = function(filename){
+	var first=null;
+	while (this.head !== null && (first === null || first.skip)){
+		first = this.head;
+		this.head = this.head.next;
+	}
+	return first;
+}
+
+TicketQ.prototype.removeId = function(id){
+	var t = this.tickets[id];
+	t.skip = true;
+	this.tickets[id]=undefined;
+}
+
+TicketQ.prototype.clean = function(){
+	var now = Date.now()
+	for (var i in this.tickets)
+		if( (now - this.tickets[i].created).milliseconds > 24*3600*1000) this.removeId(i);
 }
 
 var Server = function(path){
@@ -37,22 +77,9 @@ Server.prototype.parseSettings = function(data){
 Server.prototype.createServer = function(){
 	this.http = http.createServer(this.onRequest.bind(this)).listen(this.options.port);
 	this.views = require('./views.js');
-	this.tickets = {q: [], all: {}};
+	this.ticketq = new TicketQ();
 	this.totalTraffic=0;
 	this.trafficMonitor = setInterval((this.statsTick).bind(this),1000);
-	this.ticketCleaner = setInterval((this.cleanTickets).bind(this),24*3600*1000);
-}
-
-Server.prototype.cleanTickets = function(){
-	var now = Date.now()
-	for (var i in this.tickets.all){
-		if( (now - this.tickets.all[i].created).milliseconds > 24*3600*1000){
-			this.tickets.q[this.tickets.q.indexOf(this.tickets.all[i])]==null;
-			delete this.tickets.all[i];
-		}
-	}
-	//we need to improve on the ticket system
-	//this function potentially lies in O(n²)
 }
 
 Server.prototype.findFiles = function(){
@@ -123,10 +150,7 @@ Server.prototype.showTemplate = function(res,req,textfnc,mimeType){
 Server.prototype.createTicket = function(req,res,matches){
 	var filename=matches[1];
 	if(filename in this.files){
-		var t = new Ticket(this, filename)
-		this.tickets.all[t.id]=t;
-
-		this.tickets.q.push(t);
+		var t = this.ticketq.append(filename)
 		res.writeHead(302, {location: '/download/' + t.id});
 		res.end();
 	}
@@ -142,7 +166,7 @@ Server.prototype.createTicket = function(req,res,matches){
 
 Server.prototype.download = function(req,res,matches){
 	
-	var ticket=this.tickets.all[matches[1]];
+	var ticket=this.ticketq.tickets[matches[1]];
 	if(ticket){
 		if(ticket.res){
 			res.writeHead(403)
@@ -150,18 +174,18 @@ Server.prototype.download = function(req,res,matches){
 		}
 		else{
 			if(req.headers.range){
-				var ranges=req.headers.range.match(/^bytes=([0-9]*)-([0-9]*)/)
-				ticket.start=parseInt(ranges[1]) || 0;
-				ticket.end=parseInt(ranges[2]) || this.files[ticket.filename].size-1;
+				var range=req.headers.range.match(/^bytes=([0-9]*)-([0-9]*)/)
+				ticket.range.start=parseInt(range[1]) || 0;
+				ticket.range.end=parseInt(range[2]) || this.files[ticket.filename].size-1;
 			}
 			if(! (ticket.filename in this.files)){ //datei wurde in der Zwischenzeit gelöscht
 				res.writeHead(404)
 				res.end('file not found');
 			}			
-			else if(!ticket.end || ticket.start<=ticket.end){
+			else if(!ticket.range.end || ticket.range.start<=ticket.range.end){
 				var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
-				if(ticket.end){
-					options['Content-Range'] = 'bytes ' + ticket.start + '-' + ticket.end + '/' + this.files[ticket.filename].size;
+				if(ticket.range.end){
+					options['Content-Range'] = 'bytes ' + ticket.range.start + '-' + ticket.range.end + '/' + this.files[ticket.filename].size;
 				}
 				res.writeHead(200,options);
 	
@@ -185,24 +209,24 @@ Server.prototype.download = function(req,res,matches){
 
 Server.prototype.pushDownload = function(ticket){
 	if(ticket.filename in this.files){
-		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.start, end: ticket.end});
+		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.range.start, end: ticket.range.end});
 		ticket.rs.pipe(ticket.res);
 		ticket.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
 	}
-	else{ //file has been deleted in the mean time
+	else{ //file has been deleted in the meantime
 		ticket.res.end();
 	}
 }
 
 Server.prototype.onSocketClose = function(ticket){
 	//ticket.rs.close();
-	delete this.tickets.all[ticket.id]
+	this.ticketq.removeId(ticket.id);
 }
 
 Server.prototype.statsTick = function(){
-	if (this.tickets.q.length > 0 && this.totalTraffic < (this.options.maintainTraffic || Number.POSITIVE_INFINITY)){
+	if (this.ticketq.head!== null && this.totalTraffic < (this.options.maintainTraffic || Number.POSITIVE_INFINITY)){
 		var t;
- 		while(this.tickets.q.length>0 && (null == (t = this.tickets.q.shift()))){} //some entries in tickets may be null due to premature deletion
+ 		while(this.ticketq.head !== null && (null == (t = this.ticketq.shift()))){} //some entries in tickets may be null due to premature deletion
 		if( t ){ // the last item might be null as well
 			t.ready = true;
 			if( t.res ){
@@ -210,7 +234,6 @@ Server.prototype.statsTick = function(){
 			}
 		}
 	}
-	//console.log(this.totalTraffic);
 	this.totalTraffic = 0;
 }
 
