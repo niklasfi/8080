@@ -2,9 +2,6 @@ var http = require('http');
 var fs   = require('fs');
 var url  = require('url');
 
-var thankyou = require('./templates/thankyou.html.js');
-var style = require('./templates/style.css.js');
-
 var settingsPath='settings2.json';
 
 var Ticket = function(Server, filename){
@@ -39,6 +36,8 @@ Server.prototype.parseSettings = function(data){
 
 Server.prototype.createServer = function(){
 	this.http = http.createServer(this.onRequest.bind(this)).listen(this.options.port);
+	this.options.staticPath = this.options.staticPath || './static/'
+	this.views = require('./views.js');
 	this.tickets = {q: [], all: {}};
 	this.totalTraffic=0;
 	this.trafficMonitor = setInterval((this.statsTick).bind(this),1000);
@@ -95,31 +94,26 @@ Server.prototype.onFileChange = function(filename,curr,prev){
 
 Server.prototype.onRequest = function(req,res){
 	var u = url.parse(req.url)
-	var matches;	
+	var matches;
 	if(u.pathname == "/" || u.pathname.match(/^\/index\/?/i))
-		this.showIndex(req,res);
+		this.views.index.bind(this)(req,res);
 	else if(matches=u.pathname.match(/^\/createticketfor\/([a-zA-Z0-9_.-]+)/i))
 		this.createTicket(req,res,matches);
 	else if(matches=u.pathname.match(/^\/download\/([0-9]+)\/?/i))
 		this.download(req,res,matches);
 	else if(u.pathname.match(/^\/thankyou\/?/i))
-		this.showTemplate(res,req,thankyou.text);
+		this.sendStatic(res,req, 'thankyou.html');
 	else if(u.pathname.match(/^\/style.css\/?/i))
-		this.showTemplate(res,req,style.text, 'text/css; charset=utf-8');
+		this.sendStatic(res, req, 'style.css', {'Content-Type': 'text/css'});
 	else{
-		res.writeHead(200,{});
-		res.write(req.url+"\n");
-		res.end(JSON.stringify(url.parse(req.url)));
+		res.writeHead(404,{'Content-Type': 'text/plain; charset=utf-8'});
+		res.end('file not found: '+req.url+"\n");
 	}
 }
 
-Server.prototype.showIndex = function(req,res){
-	res.writeHead(200,{'Content-Type': 'text/html; charset=utf-8'});
-	res.write('<http><head><link rel="stylesheet" type="text/css" href="style.css"></head><body><h1>OTR-Mirror</h1><ul>\n')
-	for(var i in this.files){
-		res.write('\t<li><a href="/createTicketFor/' + i + '">'+i+'</a></li>\n');
-	}
-	res.end('</ul></html>');
+Server.prototype.sendStatic = function(res,req,path,httpOptions){
+	res.writeHead(200,httpOptions || {'Content-Type': 'text/html; charset=utf-8'})
+	fs.createReadStream(this.options.staticPath+path).pipe(res)
 }
 
 Server.prototype.showTemplate = function(res,req,textfnc,mimeType){
@@ -174,7 +168,7 @@ Server.prototype.download = function(req,res,matches){
 	
 				ticket.res=res;
 		
-				if(ticket.ready) this.sendfile(ticket);
+				if(ticket.ready) this.pushDownload(ticket);
 			}
 			else{
 				res.writeHead(416);
@@ -190,7 +184,7 @@ Server.prototype.download = function(req,res,matches){
 
 }
 
-Server.prototype.sendfile = function(ticket){
+Server.prototype.pushDownload = function(ticket){
 	if(ticket.filename in this.files){
 		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.start, end: ticket.end});
 		ticket.rs.pipe(ticket.res);
@@ -213,7 +207,7 @@ Server.prototype.statsTick = function(){
 		if( t ){ // the last item might be null as well
 			t.ready = true;
 			if( t.res ){
-				this.sendfile(t);
+				this.pushDownload(t);
 			}
 		}
 	}
