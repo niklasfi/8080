@@ -36,7 +36,6 @@ Server.prototype.parseSettings = function(data){
 
 Server.prototype.createServer = function(){
 	this.http = http.createServer(this.onRequest.bind(this)).listen(this.options.port);
-	this.options.staticPath = this.options.staticPath || './static/'
 	this.views = require('./views.js');
 	this.tickets = {q: [], all: {}};
 	this.totalTraffic=0;
@@ -113,7 +112,7 @@ Server.prototype.onRequest = function(req,res){
 
 Server.prototype.sendStatic = function(res,req,path,httpOptions){
 	res.writeHead(200,httpOptions || {'Content-Type': 'text/html; charset=utf-8'})
-	fs.createReadStream(this.options.staticPath+path).pipe(res)
+	fs.createReadStream('./static/'+path).pipe(res)
 }
 
 Server.prototype.showTemplate = function(res,req,textfnc,mimeType){
