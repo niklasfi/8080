@@ -10,7 +10,7 @@ Y8a     a8P   `8ba,  ,ad8'   Y8a     a8P   `8ba,  ,ad8'
 		open otr-mirror system
 
 Prerequisites:
-	- node.js 0.3.7 (nodejs.org) 
+	- node.js 0.3.8 (nodejs.org) 
 
 Installing node.js:
 	- download
