@@ -17,6 +17,6 @@ Installing node.js:
 	- ./configure; make; sudo make install
 
 Usage:
- 	- change settings in settings.json
+ 	- move settings2.sample.json to settings2.json, configure
 	- start server by running 'node server2.js'
 
