@@ -28,7 +28,6 @@ Server.prototype.parseSettings = function(data){
 	this.files={};
 	this.findFiles();
 	setInterval((this.findFiles).bind(this),3000);
-
 }
 
 Server.prototype.createServer = function(){
