@@ -87,6 +87,8 @@ Server.prototype.onRequest = function(req,res){
 		this.sendStatic(res,req, 'thankyou.html');
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(res, req, this.options.cssName, {'Content-Type': 'text/css'});
+	else if(u.pathname == '/linklist/')
+		(this.views.linklist).bind(this)(req,res);
 	else{
 		this.views.send404(req,res);
 	}
