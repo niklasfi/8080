@@ -22,8 +22,8 @@ Server.prototype.parseSettings = function(data){
 	this.options=JSON.parse(data);
 	if(!this.options.downloadPath) throw new Error('downloadPath is not set in settings file');
 	if(this.options.downloadPath.substring(this.options.downloadPath.length-1,1)!='/') this.options.downloadPath+'/';
-	this.options.cssPath = this.options.cssPath || 'style.css';
-	if(this.options.cssPath.substring(this.options.cssPath.length-1,1)!='/') this.options.cssPath+'/';
+	this.options.cssName = this.options.cssName || 'bauerj.css';
+	if(this.options.cssName.substring(this.options.cssName.length-1,1)!='/') this.options.cssName
 	this.createServer();
 	this.files={};
 	this.findFiles();
@@ -87,7 +87,7 @@ Server.prototype.onRequest = function(req,res){
 	else if(u.pathname.match(/^\/thankyou\/?/i))
 		this.sendStatic(res,req, 'thankyou.html');
 	else if(u.pathname.match(/^\/style.css\/?/i))
-		this.sendStatic(res, req, this.options.cssPath, {'Content-Type': 'text/css'});
+		this.sendStatic(res, req, this.options.cssName, {'Content-Type': 'text/css'});
 	else{
 		res.writeHead(404,{'Content-Type': 'text/plain; charset=utf-8'});
 		res.end('file not found: '+req.url+"\n");
