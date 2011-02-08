@@ -28,7 +28,6 @@ Server.prototype.parseSettings = function(data){
 	this.files={};
 	this.findFiles();
 	setInterval((this.findFiles).bind(this),3000);
-
 }
 
 Server.prototype.createServer = function(){
@@ -78,8 +77,8 @@ Server.prototype.onFileChange = function(filename,curr,prev){
 Server.prototype.onRequest = function(req,res){
 	var u = url.parse(req.url)
 	var matches;
-	if(u.pathname == "/" || u.pathname.match(/^\/index\/?/i))
-		this.views.index.bind(this)(req,res);
+	if(u.pathname == "/" || (matches = u.pathname.match(/^\/index(\/([a-zA-Z0-9_.-]*)\/?)?$/i)))
+		(this.views.index).bind(this)(req,res,matches);
 	else if(matches=u.pathname.match(/^\/createticketfor\/([a-zA-Z0-9_.-]+)/i))
 		this.createTicket(req,res,matches);
 	else if(matches=u.pathname.match(/^\/download\/([0-9]+)\/?/i))
@@ -89,8 +88,7 @@ Server.prototype.onRequest = function(req,res){
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(res, req, this.options.cssName, {'Content-Type': 'text/css'});
 	else{
-		res.writeHead(404,{'Content-Type': 'text/plain; charset=utf-8'});
-		res.end('file not found: '+req.url+"\n");
+		this.views.send404(req,res);
 	}
 }
 
