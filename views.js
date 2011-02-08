@@ -24,6 +24,13 @@ views.index = function(req,res,matches){
 	}
 }
 
+views.linklist = function(req,res){
+	res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});
+	for(fname in this.files)
+		res.write(fname+"\n");
+	res.end();
+}
+
 views.send404 = function(req,res){
 	res.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'});
 	res.end('file not found. we cannot satisfy your request');
