@@ -20,10 +20,15 @@ Server.prototype.readSettings = function(path){
 
 Server.prototype.parseSettings = function(data){
 	this.options=JSON.parse(data);
+	
 	if(!this.options.downloadPath) throw new Error('downloadPath is not set in settings file');
 	if(this.options.downloadPath.substring(this.options.downloadPath.length-1,1)!='/') this.options.downloadPath+'/';
+	
 	this.options.cssName = this.options.cssName || 'bauerj.css';
 	if(this.options.cssName.substring(this.options.cssName.length-1,1)!='/') this.options.cssName
+	
+	this.options.redirectLocation = this.options.redirectHost ? 'http://' + redirectHost : ''
+	
 	this.createServer();
 	this.files={};
 	this.findFiles();
@@ -108,7 +113,7 @@ Server.prototype.createTicket = function(req,res,matches){
 	var filename=matches[1];
 	if(filename in this.files){
 		var t = this.ticketq.append(filename)
-		res.writeHead(302, {location: '/download/' + t.id});
+		res.writeHead(302, {location: this.options.redirecLocation+'/download/' + t.id});
 		res.end();
 	}
 	else{

@@ -1,5 +1,7 @@
 {
   "downloadPath": "/var/lib/transmission-daemon/downloads/",
   "port": 8080,
-  "maintainTraffic": 500000
+  "maintainTraffic": 500000,
+  "cssName": "new.css",
+  "servername": "localhost"
 }
