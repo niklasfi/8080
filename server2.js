@@ -113,7 +113,7 @@ Server.prototype.createTicket = function(req,res,matches){
 	var filename=matches[1];
 	if(filename in this.files){
 		var t = this.ticketq.append(filename)
-		res.writeHead(302, {location: this.options.redirecLocation+'/download/' + t.id});
+		res.writeHead(302, {location: this.options.redirectLocation+'/download/' + t.id});
 		res.end();
 	}
 	else{
@@ -133,6 +133,7 @@ Server.prototype.download = function(req,res,matches){
 		if(ticket.res){
 			res.writeHead(403)
 			res.end('you have already opened a connection for this ticket');
+			console.log(1);
 		}
 		else{
 			if(req.headers.range){
@@ -141,7 +142,9 @@ Server.prototype.download = function(req,res,matches){
 				ticket.range.end=parseInt(range[2]) || this.files[ticket.filename].size-1;
 			}
 			if(! (ticket.filename in this.files)){ //datei wurde in der Zwischenzeit gelöscht
+				console.log('404 gelöscht');
 				res.writeHead(404)
+				console.log(2);
 				res.end('file not found');
 			}			
 			else if(!ticket.range.end || ticket.range.start<=ticket.range.end){
@@ -165,6 +168,7 @@ Server.prototype.download = function(req,res,matches){
 	else{
 		res.writeHead(404);
 		res.end('file not found');
+		console.log(3);
 	}
 
 }
@@ -182,7 +186,7 @@ Server.prototype.pushDownload = function(ticket){
 
 Server.prototype.onSocketClose = function(ticket){
 	//ticket.rs.close();
-	this.ticketq.removeId(ticket.id);
+	//this.ticketq.removeId(ticket.id);
 }
 
 Server.prototype.statsTick = function(){
