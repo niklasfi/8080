@@ -1,6 +1,6 @@
 module.exports = TicketQ;
 
-var Ticket = function(TicketQ, filename){
+Ticket = function(TicketQ, filename){
 	while(this.id==null || TicketQ.tickets[this.ID]!=null) 
 		this.id=Math.floor(Math.random() * (100000000 + 1));
 	this.created = Date.now();
@@ -9,8 +9,8 @@ var Ticket = function(TicketQ, filename){
 	this.range = {};
 	this.ready = false;
 	this.next = null;
+	this.res = [];
 }
-
 
 function TicketQ(){
 	this.head=null;

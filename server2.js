@@ -133,63 +133,54 @@ Server.prototype.download = function(req,res,matches){
 	
 	var ticket=this.ticketq.tickets[matches[1]];
 	if(ticket){
-		if(ticket.res){
-			res.writeHead(403)
-			res.end('you have already opened a connection for this ticket');
-			console.log(1);
+		if( ! (ticket.filename in this.files) ){
+			console.log('404 gelöscht');
+			res.writeHead(404)
+			console.log(2);
+			res.end('file not found');
+			return;
 		}
-		else{
-			if(req.headers.range){
-				var range=req.headers.range.match(/^bytes=([0-9]*)-([0-9]*)/)
-				ticket.range.start=parseInt(range[1]) || 0;
-				ticket.range.end=parseInt(range[2]) || this.files[ticket.filename].size-1;
-			}
-			if(! (ticket.filename in this.files)){ //datei wurde in der Zwischenzeit gelöscht
-				console.log('404 gelöscht');
-				res.writeHead(404)
-				console.log(2);
-				res.end('file not found');
-			}			
-			else if(!ticket.range.end || ticket.range.start<=ticket.range.end){
-				var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
-				if(ticket.range.end){
-					options['Content-Range'] = 'bytes ' + ticket.range.start + '-' + ticket.range.end + '/' + this.files[ticket.filename].size;
-				}
-				res.writeHead(200,options);
-	
-				ticket.res=res;
 		
-				if(ticket.ready) this.pushDownload(ticket);
-			}
-			else{
-				res.writeHead(416);
-				res.end('requested range not satisfiable');
-			}
+		var call = {res: res}
+		if(req.headers.range){
+			var range=req.headers.range.match(/^bytes=([0-9]*)-([0-9]*)/)
+			call.start = parseInt(range[1]) || 0;
+			call.end = parseInt(range[2]) || this.files[ticket.filename].size-1;
 		}
-		req.socket.on('close',(function(){this.onSocketClose(ticket)}).bind(this))
+		
+		if( call.end && call.start>call.end){
+			res.writeHead(416);
+			res.end('requested range not satisfiable');
+			return;
+		}
+		
+		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
+		if(call.end){
+			options['Content-Range'] = 'bytes ' + call.start + '-' + call.end + '/' + this.files[ticket.filename].size;
+		}
+		res.writeHead(200,options);
+
+		ticket.res.push(call);
+
+		if(ticket.ready) this.pushDownload(ticket);
 	}
 	else{
-		res.writeHead(404);
-		res.end('file not found');
-		console.log(3);
+		this.views.send404(req,res);
 	}
-
 }
 
 Server.prototype.pushDownload = function(ticket){
 	if(ticket.filename in this.files){
-		ticket.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: ticket.range.start, end: ticket.range.end});
-		ticket.rs.pipe(ticket.res);
-		ticket.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
+		var call;
+		while( call = ticket.res.pop() ){
+			call.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: call.start, end: call.end});
+			call.rs.pipe(call.res);
+			call.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
+		}
 	}
 	else{ //file has been deleted in the meantime
 		ticket.res.end();
 	}
-}
-
-Server.prototype.onSocketClose = function(ticket){
-	//ticket.rs.close();
-	//this.ticketq.removeId(ticket.id);
 }
 
 Server.prototype.statsTick = function(){
@@ -198,7 +189,7 @@ Server.prototype.statsTick = function(){
  		while(this.ticketq.head !== null && (null == (t = this.ticketq.shift()))){} //some entries in tickets may be null due to premature deletion
 		if( t ){ // the last item might be null as well
 			t.ready = true;
-			if( t.res ){
+			if( t.res.length>0 ){
 				this.pushDownload(t);
 			}
 		}
