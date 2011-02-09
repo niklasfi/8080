@@ -27,7 +27,7 @@ views.index = function(req,res,matches){
 views.linklist = function(req,res){
 	res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});
 	for(fname in this.files)
-		res.write('http://' + servername + '/index/'+fname+"\n");
+		res.write('http://' + this.options.servername + '/index/'+fname+"\n");
 	res.end();
 }
 
