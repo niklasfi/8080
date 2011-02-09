@@ -27,7 +27,10 @@ Server.prototype.parseSettings = function(data){
 	this.options.cssName = this.options.cssName || 'bauerj.css';
 	if(this.options.cssName.substring(this.options.cssName.length-1,1)!='/') this.options.cssName
 	
-	this.options.redirectLocation = (this.options.redirectHost ? ('http://' + redirectHost) : '')
+	if(this.options.redirectHost)
+		this.options.redirectLocation = 'http://' + this.options.redirectHost;
+	else
+		this.options.redirectLocation = ''	
 	
 	this.createServer();
 	this.files={};
