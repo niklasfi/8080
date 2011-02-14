@@ -5,18 +5,69 @@ views.index = function(req,res,matches){
 	if(!matches || !matches[2] || (file = this.files[matches[2]])){
 
 		res.writeHead(200,{'Content-Type': 'text/html; charset=utf-8'});
-		res.write('<html><head><link rel="stylesheet" type="text/css" href="/style.css"></head><body><h1>OTR-Mirror</h1>\
-		<h2>Download kaputt?!</h2><p>Nein. Wenn bei dir ein Download nicht startet, dann ist das normal so. Dieser Server arbeitet mit einer besonderen Warteschlangen-Art. Starte einfach den von dir gewünschten Download. Falls dein Download-Manager anzeigt, dass dieser nicht aktiv ist (0kB/s) bedeutet es, dass du in der Warteschlange bist. Sobald wieder Bandbreite zur verfügung steht, wird der Download automatisch gestartet. Das spart dir Klicks und sorgt dafür, dass jeder schnell zu seinem Download kommt.</p>\
-		<h2>Wo sind die Banner?</h2><p>Dies ist eine freie Mirror Implementation. Was bedeutet "frei"? Frei bedeutet, dass du dir den Source-Code einfach von <a href="http://github.com/niklasfi/8080">github.com</a> herunterladen und auf deinem Server oder Rechner installieren kannst. So wird es jedem ermöglicht die Bandbreite der OTR-Mirror Wolke zu vergrößern. (Patches zum Code sind natürlich auch höchst erwünscht)</p>')
+		res.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n \n \
+<html xmlns="http://www.w3.org/1999/xhtml">\n \
+<head>\n \
+<title>8080 - Dateien</title>\n \
+<meta name="keywords" content="" />\n \
+<meta name="description" content="" />\n \
+<link href="http://static.5jb.de/8080/static/bauerj.css" rel="stylesheet" type="text/css" />\n \
+</head>\n \
+<body>\n \
+<div id="wrapper">\n \
+<div id="header"> \n \
+\n \
+	<div id="logo">\n \
+\n \
+		<h1><a href="#">8080  </a></h1>\n \
+		<h2> free and open otr-mirror system</h2>\n \
+	</div>\n \
+    <div id="logo2">\n \
+</div>\n \
+	<div id="menu">\n \
+		<ul>\n \
+			<li class="current_page_item"><a href="#">Dateien</a></li>\n \
+\n \
+			<li><a href="#">FAQ</a></li>\n \
+			<li><a href="#">Impressum</a></li>			\n \
+		</ul>\n \
+	</div>\n \
+</div>\n \
+\n \
+\n \
+<!-- start page -->\n \
+<div id="page">\n \
+	<!-- start content -->\n \
+	<div id="content">\n \
+')
 		if(file){
 			res.end('\t<h2>Deine Anfrage</h2><ul class="indexlist"><li><a href="/createTicketFor/' + file.filename + '">'+ file.filename +'</a></li></ul></html>');
 		}	
 		else{
-			res.write('<h2>Verfügbare Downloads</h2><ul class="indexlist">');
+
 			for(var i in this.files)
-				res.write('\t<li><a href="/createTicketFor/' + i + '">'+i+'</a></li>\n');
-			res.end('</ul></html>');
+				res.write('                <div class="post">\n \
+                        <h1 class="title">[TODO:]Tatort vom 31.01.2011 um 22:45 (rbb) <sup>mpg</sup></h1>\n \
+                        <p class="meta">'+i+'\n \
+                        <div class="entry">\n \
+                    <p class="dl">                    <a href="/createTicketFor/'+i+'">Datei herunterladen</a> ([TODO:]999 MB ~ 99 Minuten)</p>\n \
+                        </div>\n \
+                </div>\n \
+');
 		}
+res.end('\n \
+	<div style="clear: both;">&nbsp;</div>\n \
+</div>\n \
+<!-- end page -->\n \
+</div>\n \
+<!-- start footer -->\n \
+<div id="footer">\n \
+	<p id="legal"> 8080 is open software. You are free to use and edit it as you like. Source can be found at github.com</p>\n \
+</div>\n \
+<!-- end footer -->\n \
+</body>\n \
+</html>\n \
+');
 	}
 	else{
 		console.log('x: '+matches[2]);
