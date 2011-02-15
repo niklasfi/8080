@@ -45,15 +45,32 @@ views.index = function(req,res,matches){
 		}	
 		else{
 
-			for(var i in this.files)
+			for(var i in this.files){
+				var f = this.files[i];
+				console.log(f.starttime.day);
 				res.write('                <div class="post">\n \
-                        <h1 class="title">[TODO:]Tatort vom 31.01.2011 um 22:45 (rbb) <sup>mpg</sup></h1>\n \
+                        <h1 class="title">' + f.title + ' vom '
+                        	+ f.starttime.getDay() + '.'
+                        	+ f.starttime.getMonth() + '.'
+                        	+ f.starttime.getYear() + ' um '
+                        	+ f.starttime.getHours() + ':' 
+                        	+ f.starttime.getMinutes()
+                        	+ '(' + f.station + ')'
+                        	+ '<sup>'
+                        		+ (f.flags.avi ? 'DivX ' : '')
+                        		+ (f.flags.otrkey ? 'otrkey ': '')
+                        		+ (f.flags.cut ? 'CUT ' : '')
+                        		+ (f.flags.mp4 ? 'MP4 ' : '')
+                        		+ (f.flags.hd ? 'HD ' : '')
+                        		+ (f.flags.hq ? 'HQ ' : '')
+                        		+ (f.flags.ac3 ? 'AC3 ' : '')
+                        	+ '</sup>\n \
                         <p class="meta">'+i+'\n \
                         <div class="entry">\n \
-                    <p class="dl">                    <a href="/createTicketFor/'+i+'">Datei herunterladen</a> ([TODO:]999 MB ~ 99 Minuten)</p>\n \
+                    <p class="dl">                    <a href="/createTicketFor/'+i+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p>\n \
                         </div>\n \
                 </div>\n \
-');
+');			}
 		}
 res.end('\n \
 	<div style="clear: both;">&nbsp;</div>\n \
