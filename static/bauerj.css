@@ -93,9 +93,11 @@ input, textarea, select {
 /* Menu */
 
 #menu {
-	width: 400px;
+	width: 380px;
 	height: 50px;
-	margin: 0 auto;
+	margin-top: 40px;
+	margin-left:65px;
+	/*margin: 0 0;*/
 	background: url(/images/img02.jpg) repeat-x left top;
 	
 }
@@ -109,6 +111,9 @@ input, textarea, select {
 #menu li {
 	float: left;
 	height: 50px;
+}
+#menu a.last {
+background-image: none;	
 }
 
 #menu a {
@@ -135,13 +140,14 @@ input, textarea, select {
 
 #logo {
 	width: 700px;
+	margin-top:-900px;
 	height: 99px;
-	margin: 0 auto;
-}
+	margin: 10px auto 0 auto}
+
 #logo2 {
-	background: url(/images/img08.jpg) no-repeat left 35px;
+	background: url(/images/img08.png) no-repeat left 35px;
 	height: 500px;
-	margin-top:-19px;
+	margin-top:-120px;
 	margin-left:-150px;
 	margin-bottom:-380px;
 
