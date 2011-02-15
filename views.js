@@ -47,7 +47,6 @@ views.index = function(req,res,matches){
 
 			for(var i in this.files){
 				var f = this.files[i];
-				console.log(f.starttime.day);
 				res.write('                <div class="post">\n \
                         <h1 class="title">' + f.title + ' vom '
                         	+ f.starttime.getDay() + '.'
