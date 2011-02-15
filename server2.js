@@ -93,8 +93,12 @@ Server.prototype.onRequest = function(req,res){
 		this.download(req,res,matches);
 	else if(u.pathname.match(/^\/thankyou\/?/i))
 		this.sendStatic(res,req, 'thankyou.html');
-	else if(matches = u.pathname.match(/^\/images\/([a-z0-9]+\.(jpg)|(png))\/?$/i))
-		this.sendStatic(res, req, 'images/' + matches[1], {});
+	  else if(u.pathname.match(/^\/faq\/?/i))
+                require('./static/faq.html');
+	  else if(u.pathname.match(/^\/imprint\/?/i))
+                this.sendStatic(res,req, 'imprint.html');
+        else if(matches=u.pathname.match(/.*(jpg|png)/i))
+		this.sendStatic(res, req, '.'+  u.pathname, {});
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(res, req, this.options.cssName, {'Content-Type': 'text/css'});
 	else if(u.pathname == '/linklist/')
