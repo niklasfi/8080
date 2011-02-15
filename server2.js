@@ -59,23 +59,29 @@ Server.prototype.findFiles = function(){
 Server.prototype.addFile = function(filename){
 	fs.stat(this.options.downloadPath+filename, (function(err, stats){
 		var matches;
-		if(!stats.isFile() || !( matches= filename.match(/^([a-zA-Z0-9_]+)_([0-9]+).([0-9]+).([0-9]+)_([0-9]+)-([0-9]+)_([a-z0-9]+)_(\d+)_TVOON_DE\.mpg((\.avi)|(\.otrkey)|(\.cut)|(\.HD)|(\.mp4)|(\.HQ)|(\.ac3))+$/))) return;
+		if(!stats.isFile() || !( matches= filename.match(/^([a-zA-Z0-9_]+)_([0-9]+).([0-9]+).([0-9]+)_([0-9]+)-([0-9]+)_([a-z0-9]+)_(\d+)_TVOON_DE\.mpg(((\.avi)|(\.otrkey)|(\.cut)|(\.HD)|(\.mp4)|(\.HQ)|(\.ac3))+)$/))) return;
 		
 		this.files[filename]={filename: filename, status: 'pre-stat',
 			title: matches[1].replace("_"," "),
-			starttime: new Date('20' + matches[2], matches[3], matches[4], matches[5], matches[6]),
+			starttime: new Date(parseInt(matches[2]), parseInt(matches[3]), parseInt(matches[4]), parseInt(matches[5]), parseInt(matches[6])),
 			station: matches[7],
 			duration: matches[8],
-			flags: {
-				avi: matches[10],
-				otrkey: matches[11],
-				cut: matches[12],
-				hd: matches[13],
-				mp4: matches[14],
-				hq: matches[15],
-				ac3: matches[16]
-			}
+			flags: function(flagstring){
+				var split = flagstring.split('.');
+				var flags = {};
+				for (var i in split){
+					if(split[i].length>0)
+						flags[split[i]] = true;
+				}
+				return flags;
+			}(matches[9])
 		};
+		
+		var m = {};
+		for (var i in matches)
+			m[i.toString()]=matches[i] || "empty";
+		
+		//console.log(JSON.stringify(m));
 		
 		//console.log(JSON.stringify(this.files[filename]));
 		

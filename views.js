@@ -49,25 +49,23 @@ views.index = function(req,res,matches){
 				var f = this.files[i];
 				res.write('                <div class="post">\n \
                         <h1 class="title">' + f.title + ' vom '
-                        	+ f.starttime.getDay() + '.'
+                        	+ f.starttime.getDate() + '.'
                         	+ f.starttime.getMonth() + '.'
-                        	+ f.starttime.getYear() + ' um '
+                        	+ f.starttime.getFullYear() + ' um '
                         	+ f.starttime.getHours() + ':' 
                         	+ f.starttime.getMinutes()
                         	+ '(' + f.station + ')'
                         	+ '<sup>'
                         		+ (f.flags.avi ? 'DivX ' : '')
-                        		+ (f.flags.otrkey ? 'otrkey ': '')
+                        		+ (!f.flags.otrkey ? 'unverschlüsselt ': '')
                         		+ (f.flags.cut ? 'CUT ' : '')
                         		+ (f.flags.mp4 ? 'MP4 ' : '')
-                        		+ (f.flags.hd ? 'HD ' : '')
-                        		+ (f.flags.hq ? 'HQ ' : '')
+                        		+ (f.flags.HD ? 'HD ' : '')
+                        		+ (f.flags.HQ ? 'HQ ' : '')
                         		+ (f.flags.ac3 ? 'AC3 ' : '')
-                        	+ '</sup>\n \
-                        <p class="meta">'+i+'\n \
-                        <div class="entry">\n \
-                    <p class="dl">                    <a href="/createTicketFor/'+i+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p>\n \
-                        </div>\n \
+                        	+ '</sup></h1>\n \
+                        <p class="meta">'+i+'</p>\n \
+                        <div class="entry"><p class="dl"><a href="/createTicketFor/'+i+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p></div>\n \
                 </div>\n \
 ');			}
 		}
