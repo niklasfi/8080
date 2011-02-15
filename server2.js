@@ -136,7 +136,7 @@ Server.prototype.download = function(req,res,matches){
 	var ticket=this.ticketq.tickets[matches[1]];
 	if(ticket){
 		if(ticket.res){
-			res.writeHead(403)
+			res.writeHead('403.9')
 			res.end('you have already opened a connection for this ticket');
 			console.log(1);
 		}
