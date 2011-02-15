@@ -19,7 +19,7 @@ views.index = function(req,res,matches){
 \n \
 	<div id="logo">\n \
 \n \
-		<h1><a href="#">8080  </a></h1>\n \
+		<h1><a href="/">8080  </a></h1>\n \
 		<h2> free and open otr-mirror system</h2>\n \
 	</div>\n \
     <div id="logo2">\n \
@@ -28,8 +28,8 @@ views.index = function(req,res,matches){
 		<ul>\n \
 			<li class="current_page_item"><a href="#">Dateien</a></li>\n \
 \n \
-			<li><a href="#">FAQ</a></li>\n \
-			<li><a href="#">Impressum</a></li>			\n \
+			<li><a href="/faq">FAQ</a></li>\n \
+			<li><a href="/imprint" class="last">Impressum</a></li>			\n \
 		</ul>\n \
 	</div>\n \
 </div>\n \
