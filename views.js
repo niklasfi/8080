@@ -11,7 +11,7 @@ views.index = function(req,res,matches){
 <title>8080 - Dateien</title>\n \
 <meta name="keywords" content="" />\n \
 <meta name="description" content="" />\n \
-<html><head><link rel="stylesheet" type="text/css" href="/style.css"></head><body><h1>OTR-Mirror</h1>\
+<html><head><link rel="stylesheet" type="text/css" href="/style.css"></head><body>\
 </head>\n \
 <body>\n \
 <div id="wrapper">\n \
