@@ -117,28 +117,28 @@ Server.prototype.onRequest = function(req,res){
 	else if(matches=u.pathname.match(/^\/download\/([0-9]+)\/?/i))
 		this.download(req,res,matches);
 	else if(u.pathname.match(/^\/thankyou\/?/i))
-		this.sendStatic(res,req, 'thankyou.html');
+		this.sendStatic(req,res, 'thankyou.html');
 	  else if(u.pathname.match(/^\/faq\/?/i))
-                require('./static/faq.html');
+                this.sendStatic(req,res,'faq.html');
 	  else if(u.pathname.match(/^\/imprint\/?/i))
-                this.sendStatic(res,req, 'imprint.html');
+                this.sendStatic(req,res, 'imprint.html');
         else if(matches=u.pathname.match(/.*(jpg|png)/i))
-		this.sendStatic(res, req, '.'+  u.pathname, {});
+		this.sendStatic(req, res, '.'+  u.pathname, {});
 	else if(u.pathname.match(/^\/style.css\/?/i))
-		this.sendStatic(res, req, this.options.cssName, {'Content-Type': 'text/css'});
-	else if(u.pathname == '/linklist/')
+		this.sendStatic(req, res, this.options.cssName, {'Content-Type': 'text/css'});
+	else if(u.pathname.match(/^\/linklist\/?/i))
 		(this.views.linklist).bind(this)(req,res);
 	else{
 		this.views.send404(req,res);
 	}
 }
 
-Server.prototype.sendStatic = function(res,req,path,httpOptions){
+Server.prototype.sendStatic = function(req,res,path,httpOptions){
 	res.writeHead(200,httpOptions || {'Content-Type': 'text/html; charset=utf-8'})
 	fs.createReadStream('./static/'+path).pipe(res)
 }
 
-Server.prototype.showTemplate = function(res,req,textfnc,mimeType){
+Server.prototype.showTemplate = function(req,res,textfnc,mimeType){
 	res.writeHead(200, {'Content-Type': mimeType || 'text/html; charset=utf-8'});
 	res.end(textfnc());
 }
