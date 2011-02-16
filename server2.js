@@ -122,7 +122,7 @@ Server.prototype.onRequest = function(req,res){
                 this.sendStatic(req,res,'faq.html');
 	  else if(u.pathname.match(/^\/imprint\/?/i))
                 this.sendStatic(req,res, 'imprint.html');
-        else if(matches=u.pathname.match(/.*(jpg|png)/i))
+        else if(matches=u.pathname.match(/.*(jpg|png|ico)/i))
 		this.sendStatic(req, res, '.'+  u.pathname, {});
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(req, res, this.options.cssName, {'Content-Type': 'text/css'});
