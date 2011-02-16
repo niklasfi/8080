@@ -54,7 +54,7 @@ views.index = function(req,res,matches){
                         	+ f.starttime.getFullYear() + ' um '
                         	+ f.starttime.getHours() + ':' 
                         	+ f.starttime.getMinutes()
-                        	+ '(' + f.station + ')'
+                        	+ ' (' + f.station + ') '
                         	+ '<sup>'
                         		+ (f.flags.avi ? 'DivX ' : '')
                         		+ (!f.flags.otrkey ? 'unverschlüsselt ': '')
