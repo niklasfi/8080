@@ -66,7 +66,7 @@ views.index = function(req,res,matches){
                         		+ (f.flags.HQ ? 'HQ ' : '')
                         		+ (f.flags.ac3 ? 'AC3 ' : '')
                         	+ '</sup></h1></a>\n \
-                        <p class="meta">'+f.filename+'  <a class="md5" title="Der MD5-Hash der Datei"><img src="/images/img09.png" alt="md5-hash"> '+ f.md5  +' </a></p>\n \
+                        <p class="meta">'+f.filename+'  <a class="md5" title="Der MD5-Hash der Datei">MD5: '+ f.md5  +' </a></p>\n \
                         <div class="entry"><p class="dl"><a href="/createTicketFor/'+f.filename+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p></div>\n \
                 </div>\n \
 ');			}
