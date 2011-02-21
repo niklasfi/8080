@@ -53,7 +53,7 @@ views.index = function(req,res,matches){
                         	+ f.starttime.getMonth() + '.'
                         	+ f.starttime.getFullYear() + ' um '
                         	+ f.starttime.getHours() + ':' 
-                        	+ f.starttime.getMinutes()
+                        	+ (f.starttime.getMinutes()<10?'0':'')+f.starttime.getMinutes()
                         	+ ' (' + f.station + ') '
                         	+ '<sup>'
                         		+ (f.flags.avi ? 'DivX ' : '')
@@ -92,7 +92,7 @@ res.end('\n \
 views.linklist = function(req,res){
 	res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});
 	for(fname in this.files)
-		res.write('http://' + this.options.servername + '/index/'+fname+"\n");
+		res.write('http://' + this.options.fqdn + '/index/'+fname+"\n");
 	res.end();
 }
 

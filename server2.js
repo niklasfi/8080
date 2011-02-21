@@ -27,11 +27,6 @@ Server.prototype.parseSettings = function(data){
 	this.options.cssName = this.options.cssName || 'bauerj.css';
 	if(this.options.cssName.substring(this.options.cssName.length-1,1)!='/') this.options.cssName
 	
-	if(this.options.redirectHost)
-		this.options.redirectLocation = 'http://' + this.options.redirectHost;
-	else
-		this.options.redirectLocation = ''	
-	
 	this.createServer();
 	this.files={};
 	this.findFiles();
@@ -61,9 +56,11 @@ Server.prototype.addFile = function(filename){
 		var matches;
 		if(!stats.isFile() || !( matches= filename.match(/^([a-zA-Z0-9_]+)_([0-9]+).([0-9]+).([0-9]+)_([0-9]+)-([0-9]+)_([a-z0-9]+)_(\d+)_TVOON_DE\.mpg(((\.avi)|(\.otrkey)|(\.cut)|(\.HD)|(\.mp4)|(\.HQ)|(\.ac3))+)$/))) return;
 		
+		//console.log(matches[1].replace(/\_/g,"$"));
+
 		this.files[filename]={filename: filename, status: 'pre-stat',
-			title: matches[1].replace("_"," "),
-			starttime: new Date(parseInt(matches[2]), parseInt(matches[3]), parseInt(matches[4]), parseInt(matches[5]), parseInt(matches[6])),
+			title: matches[1].replace(/\_/g," "),
+			starttime: new Date(2000+parseInt(matches[2]), parseInt(matches[3]), parseInt(matches[4]), parseInt(matches[5]), parseInt(matches[6])),
 			station: matches[7],
 			duration: matches[8],
 			flags: function(flagstring){
@@ -147,7 +144,7 @@ Server.prototype.createTicket = function(req,res,matches){
 	var filename=matches[1];
 	if(filename in this.files){
 		var t = this.ticketq.append(filename)
-		res.writeHead(302, {location: this.options.redirectLocation+'/download/' + t.id});
+		res.writeHead(302, {location: 'http://' + this.options.fqdn+'/download/' + t.id});
 		res.end();
 	}
 	else{
@@ -188,8 +185,11 @@ Server.prototype.download = function(req,res,matches){
 		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
 		if(call.end){
 			options['Content-Range'] = 'bytes ' + call.start + '-' + call.end + '/' + this.files[ticket.filename].size;
+			res.writeHead(206,options);
 		}
-		res.writeHead(200,options);
+		else{
+			res.writeHead(200,options)
+		}
 
 		ticket.res.push(call);
 
