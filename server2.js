@@ -2,6 +2,7 @@ var http = require('http');
 var fs   = require('fs');
 var url  = require('url');
 var TicketQ = require('./ticketq.js');
+var spawn = require('child_process').spawn;
 
 var settingsPath='settings2.json';
 
@@ -71,7 +72,8 @@ Server.prototype.addFile = function(filename){
 						flags[split[i]] = true;
 				}
 				return flags;
-			}(matches[9])
+			}(matches[9]),
+			md5: null
 		};
 		
 		var m = {};
@@ -87,16 +89,45 @@ Server.prototype.addFile = function(filename){
 		this.files[filename].size=stats.size;
 		this.files[filename].status='ready';
 		fs.watchFile(this.options.downloadPath+filename, (function(curr,prev){this.onFileChange(filename,curr,prev);}).bind(this));
+		this.getMd5(filename);
+	}).bind(this));
+}
+
+Server.prototype.saveMd5 = function(filename,sigma){
+	var hex = parseInt((sigma.match(/^[0-9a-f]+/))[0],16);
+	var b = new Buffer(hex.toString());
+	this.files[filename].md5 = b.toString('base64');
+}
+
+Server.prototype.getMd5 = function(filename){
+	fs.readFile(this.options.downloadPath+filename+'.md5','utf8',(function(err,sigma){
+		if(err) return this.makeMd5(filename)
+		else this.saveMd5(filename,sigma)
+	}).bind(this))
+}
+
+Server.prototype.makeMd5 = function(filename){
+	var sigma = '';
+	var proc = spawn('md5sum',[this.options.downloadPath+filename])
+	proc.stdout.setEncoding('utf8');
+	proc.stdout.on('data',function(chunk){
+		sigma += chunk;
+	});
+	proc.on('exit',(function(code,signal){
+		if(code != 0) return console.log('md5sum of ' + filename + ' failed, exit code: ' + code);
+		this.saveMd5(filename,sigma);
+		fs.writeFile(this.options.downloadPath+filename+'.md5',sigma);
 	}).bind(this));
 }
 
 Server.prototype.onFileChange = function(filename,curr,prev){
 	if(curr.nlink){
-
 		if(filename in this.files)
 			this.files[filename].size = curr.size;
 		else
 			this.addFile(filename)
+		this.files[filename].md5 = null;
+		this.getMd5(filename);
 	}
 	else{
 		console.log('- '+filename);
@@ -182,12 +213,14 @@ Server.prototype.download = function(req,res,matches){
 			return;
 		}
 		
-		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
+		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size,'Content-MD5': this.files[ticket.filename].md5};
 		if(call.end){
 			options['Content-Range'] = 'bytes ' + call.start + '-' + call.end + '/' + this.files[ticket.filename].size;
-			res.writeHead(206,options);
 		}
+		if(call.end  && (call.end!=this.files[ticket.filename].size || call.start!= 0) )
+			res.writeHead(206,options);
 		else{
+			console.log(this.files[ticket.filename].md5);
 			res.writeHead(200,options)
 		}
 

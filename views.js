@@ -67,7 +67,7 @@ views.index = function(req,res,matches){
                         		+ (f.flags.ac3 ? 'AC3 ' : '')
                         	+ '</sup></h1></a>\n \
                         <p class="meta">'+f.filename+'</p>\n \
-                        <div class="entry"><p class="dl"><a href="/createTicketFor/'+i+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p></div>\n \
+                        <div class="entry"><p class="dl"><a href="/createTicketFor/'+f.filename+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p></div>\n \
                 </div>\n \
 ');			}
 res.end('\n \
