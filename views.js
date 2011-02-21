@@ -85,10 +85,10 @@ res.end('\n \
 ');
 }
 
-views.linklist = function(req,res){
+views.linklist = function(req,res, state){
 	res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});
 	for(fname in this.files)
-		res.write('http://' + this.options.fqdn + '/index/'+fname+"\n");
+		res.write('http://' + this.options.fqdn + '/index/'+ fname + ' ' + state + "\n");
 	res.end();
 }
 

@@ -47,8 +47,12 @@ img {
 	border: none;
 }
 .md5 {
-margin-left:25px;
-padding-top:-5px;
+	margin-left:25px;
+	padding-top:-5px;
+}
+
+.md5 img {
+	margin-bottom: -5px;
 }
 img.left {
 	float: left;

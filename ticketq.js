@@ -16,12 +16,15 @@ function TicketQ(){
 	this.head=null;
 	this.tail=null;
 	this.tickets = {};
+	this.qlen = 0;
 	setInterval((this.clean).bind(this),24*3600*1000)
 }
 
 TicketQ.prototype.append = function(filename){
 	var newTicket = new Ticket(this, filename);
 	this.tickets[newTicket.id] = newTicket;
+	this.qlen+=1;
+	console.log(this.qlen);
 	if(this.head === null) this.head=newTicket; //Q empty, set head;
 	else this.tail.next = newTicket; //Q not empty, last object needs to be linked
 	return this.tail = newTicket;
@@ -32,6 +35,7 @@ TicketQ.prototype.shift = function(filename){
 	while (this.head !== null && (first === null || first.skip)){
 		first = this.head;
 		this.head = this.head.next;
+		this.qlen-=1;
 	}
 	return first;
 }

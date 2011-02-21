@@ -153,10 +153,14 @@ Server.prototype.onRequest = function(req,res){
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(req, res, this.options.cssName, {'Content-Type': 'text/css'});
 	else if(u.pathname.match(/^\/linklist\/?/i))
-		(this.views.linklist).bind(this)(req,res);
+		(this.views.linklist).bind(this)(req,res,this.determineState());
 	else{
 		this.views.send404(req,res);
 	}
+}
+
+Server.prototype.determineState = function(){
+	return Math.floor(this.ticketq.qlen / 10)
 }
 
 Server.prototype.sendStatic = function(req,res,path,httpOptions){
