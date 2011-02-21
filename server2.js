@@ -73,7 +73,7 @@ Server.prototype.addFile = function(filename){
 				}
 				return flags;
 			}(matches[9]),
-			md5: null
+			md5: false
 		};
 		
 		var m = {};
@@ -89,20 +89,15 @@ Server.prototype.addFile = function(filename){
 		this.files[filename].size=stats.size;
 		this.files[filename].status='ready';
 		fs.watchFile(this.options.downloadPath+filename, (function(curr,prev){this.onFileChange(filename,curr,prev);}).bind(this));
-		this.getMd5(filename);
+		if(this.options.md5) this.getMd5(filename);
 	}).bind(this));
-}
-
-Server.prototype.saveMd5 = function(filename,sigma){
-	var hex = parseInt((sigma.match(/^[0-9a-f]+/))[0],16);
-	var b = new Buffer(hex.toString());
-	this.files[filename].md5 = b.toString('base64');
 }
 
 Server.prototype.getMd5 = function(filename){
 	fs.readFile(this.options.downloadPath+filename+'.md5','utf8',(function(err,sigma){
 		if(err) return this.makeMd5(filename)
-		else this.saveMd5(filename,sigma)
+		var hex = sigma.match(/^[0-9a-f]+/i)[0]
+		this.files[filename].md5 = hex;
 	}).bind(this))
 }
 
@@ -115,8 +110,9 @@ Server.prototype.makeMd5 = function(filename){
 	});
 	proc.on('exit',(function(code,signal){
 		if(code != 0) return console.log('md5sum of ' + filename + ' failed, exit code: ' + code);
-		this.saveMd5(filename,sigma);
-		fs.writeFile(this.options.downloadPath+filename+'.md5',sigma);
+		var hex = sigma.match(/^[0-9a-f]+/i)[0]
+		this.files[filename].md5 = hex;
+		fs.writeFile(this.options.downloadPath+filename+'.md5',hex);
 	}).bind(this));
 }
 
@@ -127,7 +123,7 @@ Server.prototype.onFileChange = function(filename,curr,prev){
 		else
 			this.addFile(filename)
 		this.files[filename].md5 = null;
-		this.getMd5(filename);
+		if(this.options.md5) this.getMd5(filename);
 	}
 	else{
 		console.log('- '+filename);
@@ -144,11 +140,13 @@ Server.prototype.onRequest = function(req,res){
 		this.createTicket(req,res,matches);
 	else if(matches=u.pathname.match(/^\/download\/([0-9]+)\/?/i))
 		this.download(req,res,matches);
+	else if(matches=u.pathname.match(/^\/md5\/([a-zA-Z0-9_.-]*)\/?$/))
+		this.sendMd5(req,res,matches);
 	else if(u.pathname.match(/^\/thankyou\/?/i))
 		this.sendStatic(req,res, 'thankyou.html');
-	  else if(u.pathname.match(/^\/faq\/?/i))
+	else if(u.pathname.match(/^\/faq\/?/i))
                 this.sendStatic(req,res,'faq.html');
-	  else if(u.pathname.match(/^\/imprint\/?/i))
+	else if(u.pathname.match(/^\/imprint\/?/i))
                 this.sendStatic(req,res, 'imprint.html');
         else if(matches=u.pathname.match(/.*(jpg|png|ico)/i))
 		this.sendStatic(req, res, '.'+  u.pathname, {});
@@ -169,6 +167,13 @@ Server.prototype.sendStatic = function(req,res,path,httpOptions){
 Server.prototype.showTemplate = function(req,res,textfnc,mimeType){
 	res.writeHead(200, {'Content-Type': mimeType || 'text/html; charset=utf-8'});
 	res.end(textfnc());
+}
+
+Server.prototype.sendMd5 = function(req,res,matches){
+	var f = this.files[matches[1]];
+	if(!f || !f.md5) return this.views.send404(req,res)
+	res.writeHead(200,{'Content-Type': 'text/plain'})
+	res.end(f.md5);
 }
 
 Server.prototype.createTicket = function(req,res,matches){
@@ -195,7 +200,6 @@ Server.prototype.download = function(req,res,matches){
 		if( ! (ticket.filename in this.files) ){
 			console.log('404 gelöscht');
 			res.writeHead(404)
-			console.log(2);
 			res.end('file not found');
 			return;
 		}
@@ -213,14 +217,13 @@ Server.prototype.download = function(req,res,matches){
 			return;
 		}
 		
-		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size,'Content-MD5': this.files[ticket.filename].md5};
+		var options = {'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename='+ticket.filename, 'Content-Length': this.files[ticket.filename].size};
 		if(call.end){
 			options['Content-Range'] = 'bytes ' + call.start + '-' + call.end + '/' + this.files[ticket.filename].size;
 		}
 		if(call.end  && (call.end!=this.files[ticket.filename].size || call.start!= 0) )
 			res.writeHead(206,options);
 		else{
-			console.log(this.files[ticket.filename].md5);
 			res.writeHead(200,options)
 		}
 
