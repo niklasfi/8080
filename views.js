@@ -1,11 +1,18 @@
 var views = exports;
 
 views.index = function(req,res,matches){
-	var file
-	if(!matches || !matches[2] || (file = this.files[matches[2]])){
-
-		res.writeHead(200,{'Content-Type': 'text/html; charset=utf-8'});
-		res.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n \n \
+	var available;
+	if(matches && matches[2]){
+		var file = this.files[matches[2]];
+		if (!file) return this.views.send404(req,res);
+		available = [file]
+	}
+	else{
+		available = this.files
+	}
+	
+	res.writeHead(200,{'Content-Type': 'text/html; charset=utf-8'});
+	res.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n \n \
 <html xmlns="http://www.w3.org/1999/xhtml">\n \
 <head>\n \
 <title>8080 - Dateien</title>\n \
@@ -26,7 +33,7 @@ views.index = function(req,res,matches){
 </div>\n \
 	<div id="menu">\n \
 		<ul>\n \
-			<li class="current_page_item"><a href="#">Dateien</a></li>\n \
+			<li class="current_page_item"><a href="/">Dateien</a></li>\n \
 \n \
 			<li><a href="/faq">FAQ</a></li>\n \
 			<li><a href="/imprint" class="last">Impressum</a></li>			\n \
@@ -40,15 +47,10 @@ views.index = function(req,res,matches){
 	<!-- start content -->\n \
 	<div id="content">\n \
 ')
-		if(file){
-			res.end('\t<h2>Deine Anfrage</h2><ul class="indexlist"><li><a href="/createTicketFor/' + file.filename + '">'+ file.filename +'</a></li></ul></html>');
-		}	
-		else{
-
-			for(var i in this.files){
-				var f = this.files[i];
-				res.write('                <div class="post">\n \
-                        <h1 class="title">' + f.title + ' vom '
+			for(var i in available){
+				var f = available[i];
+				res.write('                <div class="post">\n'
+                        +'<a href="/index/' +f.filename+ '"><h1 class="title">' + f.title + ' vom '
                         	+ f.starttime.getDate() + '.'
                         	+ f.starttime.getMonth() + '.'
                         	+ f.starttime.getFullYear() + ' um '
@@ -63,12 +65,11 @@ views.index = function(req,res,matches){
                         		+ (f.flags.HD ? 'HD ' : '')
                         		+ (f.flags.HQ ? 'HQ ' : '')
                         		+ (f.flags.ac3 ? 'AC3 ' : '')
-                        	+ '</sup></h1>\n \
-                        <p class="meta">'+i+'</p>\n \
+                        	+ '</sup></h1></a>\n \
+                        <p class="meta">'+f.filename+'</p>\n \
                         <div class="entry"><p class="dl"><a href="/createTicketFor/'+i+'">Datei herunterladen</a> (' + (f.size/(1024*1024)).toFixed() + 'MB ~ ' + f.duration + ' Minuten)</p></div>\n \
                 </div>\n \
 ');			}
-		}
 res.end('\n \
 	<div style="clear: both;">&nbsp;</div>\n \
 </div>\n \
@@ -82,11 +83,6 @@ res.end('\n \
 </body>\n \
 </html>\n \
 ');
-	}
-	else{
-		console.log('x: '+matches[2]);
-		this.views.send404(req,res);
-	}
 }
 
 views.linklist = function(req,res){
