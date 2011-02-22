@@ -132,7 +132,10 @@ Server.prototype.onFileChange = function(filename,curr,prev){
 }
 
 Server.prototype.onRequest = function(req,res){
+	console.log('onRequest' + req.url);
+
 	var u = url.parse(req.url)
+	req.parsedUrl = u
 	var matches;
 	if(u.pathname == "/" || (matches = u.pathname.match(/^\/index(\/([a-zA-Z0-9_.-]*)\/?)?$/i)))
 		(this.views.index).bind(this)(req,res,matches);
@@ -152,8 +155,8 @@ Server.prototype.onRequest = function(req,res){
 		this.sendStatic(req, res, '.'+  u.pathname, {});
 	else if(u.pathname.match(/^\/style.css\/?/i))
 		this.sendStatic(req, res, this.options.cssName, {'Content-Type': 'text/css'});
-	else if(u.pathname.match(/^\/linklist\/?/i))
-		(this.views.linklist).bind(this)(req,res,this.determineState());
+	else if(matches = u.pathname.match(/^\/linklist(\/([a-zA-Z0-9.-]*)\/?)?/i))
+		(this.views.linklist).bind(this)(req,res,this.determineState(),matches)
 	else{
 		this.views.send404(req,res);
 	}
@@ -181,11 +184,14 @@ Server.prototype.sendMd5 = function(req,res,matches){
 }
 
 Server.prototype.createTicket = function(req,res,matches){
+	
+
 	var filename=matches[1];
 	if(filename in this.files){
 		var t = this.ticketq.append(filename)
 		res.writeHead(302, {location: 'http://' + this.options.fqdn+'/download/' + t.id});
 		res.end();
+		console.log('t ' + this.files[filename].title + ' qlen: ' + this.ticketq.qlen);
 	}
 	else{
 		res.writeHead(404, {'Content-Type': 'text/html; charset=utf-8'});
@@ -244,9 +250,10 @@ Server.prototype.pushDownload = function(ticket){
 	if(ticket.filename in this.files){
 		var call;
 		while( call = ticket.res.pop() ){
+			console.log('pushdownload-pop');
 			call.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: call.start, end: call.end});
 			call.rs.pipe(call.res);
-			call.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
+			//call.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
 		}
 	}
 	else{ //file has been deleted in the meantime
@@ -258,11 +265,12 @@ Server.prototype.statsTick = function(){
 	if (this.ticketq.head!== null && this.totalTraffic < (this.options.maintainTraffic || Number.POSITIVE_INFINITY)){
 		var t;
  		while(this.ticketq.head !== null && (null == (t = this.ticketq.shift()))){} //some entries in tickets may be null due to premature deletion
-		if( t ){ // the last item might be null as well
-			t.ready = true;
-			if( t.res.length>0 ){
-				this.pushDownload(t);
-			}
+ 			console.log('q +')
+			if( t ){ // the last item might be null as well
+				t.ready = true;
+				if( t.res.length>0 ){
+					this.pushDownload(t);
+				}
 		}
 	}
 	this.totalTraffic = 0;

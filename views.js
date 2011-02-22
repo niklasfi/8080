@@ -85,14 +85,22 @@ res.end('\n \
 ');
 }
 
-views.linklist = function(req,res, state){
+views.linklist = function(req,res, state, matches){
 	res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});
+	var type = matches[2];
 	for(fname in this.files)
-		res.write('http://' + this.options.fqdn + '/index/'+ fname + ' ' + state + "\n");
+		switch(type){
+			case "otr-search":
+				res.write(fname + ' ' + state + "\n");
+				break;
+			default :
+				res.write('http://' + this.options.fqdn + '/index/'+ fname + ' ' + state + "\n");
+		}
 	res.end();
 }
 
 views.send404 = function(req,res){
 	res.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'});
 	res.end('file not found. we cannot satisfy your request');
+	console.log('404: ' + req.parsedUrl.pathname);
 }

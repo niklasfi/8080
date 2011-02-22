@@ -24,7 +24,6 @@ TicketQ.prototype.append = function(filename){
 	var newTicket = new Ticket(this, filename);
 	this.tickets[newTicket.id] = newTicket;
 	this.qlen+=1;
-	console.log(this.qlen);
 	if(this.head === null) this.head=newTicket; //Q empty, set head;
 	else this.tail.next = newTicket; //Q not empty, last object needs to be linked
 	return this.tail = newTicket;
@@ -47,6 +46,7 @@ TicketQ.prototype.removeId = function(id){
 }
 
 TicketQ.prototype.clean = function(){
+	console.log('cleaning ticketq');
 	var now = Date.now()
 	for (var i in this.tickets)
 		if( (now - this.tickets[i].created).milliseconds > 24*3600*1000) this.removeId(i);
