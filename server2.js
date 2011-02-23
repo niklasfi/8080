@@ -220,6 +220,10 @@ Server.prototype.download = function(req,res,matches){
 			call.start = parseInt(range[1]) || 0;
 			call.end = parseInt(range[2]) || this.files[ticket.filename].size-1;
 		}
+		else{
+			call.start = 0;
+			call.end = this.files[ticket.filename].size-1;
+		}
 		
 		if( call.end && call.start>call.end){
 			res.writeHead(416);
@@ -251,14 +255,43 @@ Server.prototype.pushDownload = function(ticket){
 		var call;
 		while( call = ticket.res.pop() ){
 			console.log('pushdownload-pop');
-			call.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: call.start, end: call.end});
-			call.rs.pipe(call.res);
+			//call.rs = fs.createReadStream(this.options.downloadPath+ticket.filename,{start: call.start, end: call.end});
+			this.file2res(this.options.downloadPath+ticket.filename,call);
+			//call.rs.pipe(call.res);
 			//call.rs.on('data', (function(chunk){this.totalTraffic+=chunk.length;}).bind(this));
 		}
 	}
 	else{ //file has been deleted in the meantime
 		ticket.res.end();
 	}
+}
+
+Server.prototype.file2res = function(path,call){
+	console.log(JSON.stringify([call.start,call.end]));
+	var start = call.start;
+	var remaining = call.end-call.start+1;
+	fs.open(path,'r',0666, function(err,fd){
+		if(err) throw err;
+		var b = new Buffer(1024*1024);
+		
+		var onDrain = function(){
+			//console.log('rem: ' + remaining);
+			if (remaining)
+				fs.read(fd,b,0,Math.min(1024*1024,remaining),start,function(err,bytesRead){
+					if(err) throw err;
+					var part = b.slice(0,bytesRead);
+					start += bytesRead;
+					remaining -= bytesRead;	
+					if(remaining && call.res.write(part)){
+						onDrain();
+					}
+					else if(!remaining)
+						call.res.end(part);
+				})
+		}
+		call.res.on('drain',onDrain);
+		onDrain();
+	})
 }
 
 Server.prototype.statsTick = function(){
