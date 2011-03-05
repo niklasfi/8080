@@ -1,0 +1,34 @@
+- for(var i in files)
+	- var f = files[i]
+	.post
+		a(href="/index/" + f.filename)
+			h1.title
+				= f.title
+				= " vom "
+				= f.start.getDate()
+				= "."
+				= f.start.getMonth()
+				= "."
+				= f.start.getFullYear()
+				= " um "
+				= f.start.getHours()
+				= ":"
+				= (f.start.getMinutes()<10?'0':'') + f.start.getMinutes()
+				= " ("
+				= f.station
+				= " )"
+				sup
+					= (f.avi ? 'DivX ' : '')
+					= (!f.otrkey ? 'unverschlüsselt ': '')
+					= (f.cut ? 'CUT ' : '')
+					= (f.mp4 ? 'MP4 ' : '')
+					= (f.hd ? 'HD ' : '')
+					= (f.hq ? 'HQ ' : '')
+					= (f.ac3 ? 'AC3 ' : '')
+		p.meta= f.filename
+		.entry
+			p.dl
+				a(href="/createTicketFor/" + f.filename) 
+					= "Datei Herunterladen"
+				= ' (' + (f.filesize?(f.filesize/(1024*1024)).toFixed() + 'MB ~ ':'') + f.duration + ' Minuten)'
+

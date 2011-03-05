@@ -19,20 +19,10 @@ http.createServer(function(req,res){
 		
 	req.parsedUrl = u
 
-	if(u.pathname.match(/^\/thankyou\/?/i))
-		v.sendStatic(req,res, 'thankyou.html');
-	else if(u.pathname.match(/^\/faq\/?/i))
-		v.sendStatic(req,res,'faq.html');
+	if(u.pathname.match(/^\/faq\/?/i))
+		v.faq(req,res);
 	else if(u.pathname.match(/^\/imprint\/?/i))
-		v.sendStatic(req,res, 'imprint.html');		
-	else if(u.pathname.match(/^\/style.css\/?/i))
-		v.sendStatic(req, res, conf.server.cssfile);
-	else if(matches=u.pathname.match(/.*(jpg|png|ico)/i))
-		v.sendStatic(req, res, u.pathname);
-	else if(matches=u.pathname.match(/jquery.js/i))
-		v.sendStatic(req, res, 'jquery-1.5.1.min.js');
-	else if(matches=u.pathname.match(/qrefresh.js/i))
-		v.sendStatic(req, res, 'qrefresh.js');
+		v.imprint(req,res);
 	else if(matches = u.pathname.match(/^\/linklist(\/([a-zA-Z0-9.-]*)\/?)?/i))
 		c.linklist(req,res,matches);
 	else if(u.pathname == "/" || (matches = u.pathname.match(/^\/index(\/([a-zA-Z0-9_.-]*)\/?)?$/i)))
