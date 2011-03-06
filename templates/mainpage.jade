@@ -26,9 +26,8 @@
 					= (f.hq ? 'HQ ' : '')
 					= (f.ac3 ? 'AC3 ' : '')
 		p.meta= f.filename
-		.entry
-			p.dl
-				a(href="/createTicketFor/" + f.filename) 
-					= "Datei Herunterladen"
-				= ' (' + (f.filesize?(f.filesize/(1024*1024)).toFixed() + 'MB ~ ':'') + f.duration + ' Minuten)'
+		.entry.dl
+			a(href="/createTicketFor/" + f.filename) 
+				= "Datei Herunterladen"
+			= ' (' + (f.filesize?(f.filesize/(1024*1024)).toFixed() + 'MB ~ ':'') + f.duration + ' Minuten)'
 
