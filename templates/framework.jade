@@ -1,0 +1,34 @@
+!!!5
+html
+	head
+		title 8080 - Dateien
+		link(rel="stylesheet", type="text/css", href="/static/style.css")
+		link(rel="icon", href="/static/favicon.ico", type="image/vnd.microsoft.icon")
+		link(rel="shortcut icon", href="/static/favicon.ico")
+		- if(page=='queue'){
+			script(type="text/javascript", src="/static/jquery-1.5.1.min.js")
+			script(type="text/javascript", src="/static/qrefresh.js")
+		- }
+body
+	#wrapper
+		#header
+			#logo
+				h1
+					a(href="/") 8080
+				h2 free and open otr-mirror system
+			#logo2
+			#menu
+				ul
+					li(class=(page=='root'?'current_page_item':''))
+						a(href="/") Dateien
+					li(class=(page=='faq'?'current_page_item':''))
+						a(href="/faq") FAQ
+					li(class=(page=='imprint'?'current_page_item':''))
+						a(href="/imprint") Impressum
+					li(class=(page=='queue'?'current_page_item':''))
+						a.last(href="/queue") Tickets
+		#page
+			#content
+				| !{content}
+			#footer
+				p#legal	8080 is open software. You are free to use and edit it as you like. Source can be found at github.com

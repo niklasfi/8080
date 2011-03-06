@@ -1,0 +1,18 @@
+.post
+	h1.title Meine Tickets
+	.entry
+		table#qtable(width="100%")
+			tr
+				th Datei
+				th Position
+				th Download
+			- if(rows && rows.length>0)
+					- for(var i in rows)
+						- var r = rows[i]
+						tr(id=r.ticket_id)
+							td= r.filename
+							td.position= r.position
+							td.link
+								a(href="/download/" + r.ticket_id + "/" + r.hash + "/" + r.filename)= (r.active?'high speed':'low speed')
+			- else
+				td(colspan="3") Du hast zur Zeit keine Tickets
