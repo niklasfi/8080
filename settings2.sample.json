@@ -1,7 +1,0 @@
-{
-  "downloadPath": "/var/www/dobby/",
-  "port": 8080,
-  "maintainTraffic": 500000,
-  "cssName": "new.css",
-  "servername": "localhost"
-}
